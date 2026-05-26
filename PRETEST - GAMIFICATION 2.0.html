@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Gamification Strategist - Pre-Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Bangers&display=swap" rel="stylesheet">
+    <style>
+        /* Neo-Brutalism Theme */
+        :root {
+            --bg-color: #f4f4f0;
+            --primary: #ffcf59; /* Yellow */
+            --secondary: #ff90e8; /* Pink */
+            --tertiary: #23a094; /* Teal */
+            --accent: #ff4a4a; /* Red */
+            --border-color: #000000;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#000 1px, transparent 0);
+            background-size: 20px 20px;
+            color: var(--border-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            overscroll-behavior-y: contain;
+        }
+
+        h1, h2, h3, .comic-font {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 2px;
+        }
+
+        .neo-box {
+            background-color: white;
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 6px 6px 0px var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .neo-button {
+            background-color: var(--primary);
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 4px 4px 0px var(--border-color);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            user-select: none;
+        }
+
+        .neo-button:active {
+            box-shadow: 0px 0px 0px var(--border-color);
+            transform: translate(4px, 4px);
+        }
+        
+        .neo-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        .neo-input {
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 4px 4px 0px var(--border-color);
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            outline: none;
+        }
+        .neo-input:focus { background-color: #f0f8ff; }
+
+        /* Screen Management */
+        .screen { display: none; min-height: 100vh; padding: 110px 20px 100px 20px; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; width: 100%; }
+        .screen.active { display: flex; animation: fadeIn 0.5s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Game 1: Swipe */
+        .swipe-container { position: relative; width: 100%; max-width: 320px; height: 450px; margin: 10px auto; perspective: 1000px; }
+        .swipe-card {
+            position: absolute; width: 100%; height: 100%; background: white;
+            border: 4px solid black; border-radius: 16px; box-shadow: 8px 8px 0px black;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
+            text-align: center; cursor: grab; transition: transform 0.3s ease;
+            background-color: var(--primary); z-index: 10;
+            overflow-y: auto;
+        }
+        .swipe-card:active { cursor: grabbing; }
+
+        /* HUD - Dashboard Floating Neo-Brutalism */
+        .hud {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 700px; padding: 10px 15px;
+            background: white; border: 4px solid black; border-radius: 12px;
+            box-shadow: 6px 6px 0px black;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; font-weight: bold; transition: all 0.3s ease;
+        }
+        .hud-profile { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .hud-avatar { width: 35px; height: 35px; background: var(--secondary); border: 2px solid black; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; box-shadow: 2px 2px 0 black;}
+        .hud-stats { display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: center; }
+        .xp-text { font-family: 'Bangers', cursive; font-size: 22px; letter-spacing: 1px; color: var(--border-color); text-shadow: 1px 1px 0 var(--tertiary); }
+        .progress-bar-container { width: 100%; max-width: 200px; height: 18px; border: 3px solid black; background: #eee; border-radius: 20px; overflow: hidden; box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1); }
+        .progress-bar { height: 100%; background: var(--tertiary); width: 0%; transition: width 0.3s; border-right: 3px solid black; }
+        .mute-btn { background: black; color: white; padding: 6px 12px; border-radius: 8px; font-size: 12px; border: 2px solid black; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; box-shadow: 3px 3px 0 var(--primary); transition: 0.1s;}
+        .mute-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 transparent; }
+        
+        /* Modal / Badge */
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .badge-img { font-size: 80px; margin-bottom: 20px; animation: bounce 1s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(1.1); } }
+
+        /* Debrief Styles */
+        .feedback-item { border-left: 5px solid; padding-left: 10px; margin-bottom: 15px; text-align: left; background: #fff; padding: 10px; border-radius: 0 8px 8px 0; border: 2px solid black; border-left-width: 8px;}
+        .feedback-item.correct { border-left-color: var(--tertiary); }
+        .feedback-item.wrong { border-left-color: var(--accent); }
+
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 10px; background: var(--border-color); color: white; font-size: 12px; z-index: 50; }
+    </style>
+</head>
+<body>
+
+    <!-- HUD -->
+    <div id="hud" class="hud" style="display: none;">
+        <div class="hud-profile hidden sm:flex">
+            <div class="hud-avatar">🕵️</div>
+            <span id="hudName" class="truncate max-w-[100px]">Agen</span>
+        </div>
+        <div class="hud-stats">
+            <div class="xp-text">⭐ XP: <span id="scoreDisplay">0</span></div>
+            <div class="progress-bar-container"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+        <button id="muteBtn" class="mute-btn">🔊 BGM</button>
+    </div>
+
+    <!-- Screen 1: Gateway / Login -->
+    <div id="screen-login" class="screen active">
+        <div class="neo-box p-8 max-w-md w-full text-center bg-[#ff90e8]">
+            <h1 class="text-5xl mb-2 text-white" style="text-shadow: 3px 3px 0 #000;">PRE-TEST</h1>
+            <h2 class="text-2xl mb-6">AI Gamification Strategist</h2>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block font-bold mb-1">Nama Agen:</label>
+                    <input type="text" id="playerName" class="neo-input" placeholder="Masukkan Nama Sesuai Absen">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">NIK:</label>
+                    <input type="text" id="playerNIK" class="neo-input" placeholder="Masukkan NIK">
+                </div>
+                <button onclick="startGame()" class="neo-button w-full py-3 mt-4 text-xl bg-[#ffcf59] uppercase">Akses Command Center</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Briefing -->
+    <div id="screen-briefing" class="screen">
+        <div class="neo-box p-6 max-w-md w-full">
+            <h2 class="text-3xl text-center mb-4 text-[#23a094]">MISSION BRIEFING</h2>
+            <p class="mb-4 font-semibold">Selamat datang, <span id="displayName" class="text-[#ff4a4a]"></span>!</p>
+            <div class="bg-gray-100 p-4 rounded border-2 border-black mb-4 text-sm">
+                <p class="mb-2 text-red-600 font-bold">PERHATIAN: Ini adalah Assessment Pre-Test. Setiap tantangan hanya memiliki 1 kali kesempatan menjawab (1 kali klik/swipe).</p>
+                <ul class="list-disc pl-5 mt-2 font-semibold space-y-1">
+                    <li><strong>Tahap 1 - Swipe-It:</strong> Tentukan Benar/Salah dari sebuah pernyataan.</li>
+                    <li><strong>Tahap 2 - Syntax Router:</strong> Pilih 1 terminal jawaban yang paling tepat.</li>
+                    <li><strong>Tahap 3 - Element Scanner:</strong> Pindai dan pilih 1 kartu konsep yang cocok.</li>
+                    <li><strong>Tahap 4 - The Mastermind:</strong> Pecahkan studi kasus operasional di lapangan.</li>
+                </ul>
+            </div>
+            <button onclick="initGame1()" class="neo-button w-full py-3 text-lg bg-[#23a094] text-white uppercase">Mulai Pre-Test!</button>
+        </div>
+    </div>
+
+    <!-- Screen 3: Game 1 - Swipe -->
+    <div id="screen-game1" class="screen">
+        <h2 class="text-3xl mb-2 comic-font text-center bg-white px-4 py-1 border-4 border-black">SWIPE-IT!</h2>
+        <p class="text-center font-bold bg-[#ffcf59] px-2 py-1 border-2 border-black rounded mb-4 text-sm">⬅️ Kiri = SALAH | Kanan = BENAR ➡️</p>
+        
+        <div class="swipe-container" id="swipeContainer">
+            <!-- Cards via JS -->
+        </div>
+        <div class="flex justify-between w-full max-w-[300px] mt-4 gap-4">
+            <button onclick="handleSwipeBtn(false)" class="neo-button flex-1 py-3 bg-[#ff4a4a] text-white">SALAH</button>
+            <button onclick="handleSwipeBtn(true)" class="neo-button flex-1 py-3 bg-[#23a094] text-white">BENAR</button>
+        </div>
+    </div>
+
+    <!-- Screen 4: Game 2 - Terminal Router -->
+    <div id="screen-game2" class="screen">
+        <h2 class="text-3xl mb-2 comic-font text-center bg-white px-4 py-1 border-4 border-black">SYNTAX ROUTER</h2>
+        <p class="mb-4 font-bold text-center text-sm bg-red-100 px-2 py-1 border-2 border-black rounded">Pilih Terminal Jawaban yang Tepat! (1 Kesempatan)</p>
+        
+        <div class="neo-box p-5 max-w-md w-full bg-[#ffcf59] mb-6 relative">
+            <div class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-4 h-8 bg-black"></div>
+            <p id="router-question" class="text-lg font-bold text-center"></p>
+        </div>
+        
+        <div id="router-options" class="flex flex-col gap-3 w-full max-w-md">
+            <!-- Terminal Options via JS -->
+        </div>
+    </div>
+
+    <!-- Screen 5: Game 3 - Card Select -->
+    <div id="screen-game3" class="screen">
+        <h2 class="text-3xl mb-2 comic-font text-center bg-white px-4 py-1 border-4 border-black">ELEMENT SCANNER</h2>
+        <p class="mb-4 font-bold text-center text-sm bg-red-100 px-2 py-1 border-2 border-black rounded">Tap Kartu Konsep yang Sesuai! (1 Kesempatan)</p>
+        
+        <div class="neo-box p-4 max-w-md w-full bg-white mb-6 text-center border-b-8">
+            <p id="card-question" class="text-md font-bold"></p>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 w-full max-w-md" id="card-options">
+            <!-- 4 Cards via JS -->
+        </div>
+    </div>
+
+    <!-- Screen 6: Game 4 - MCQ -->
+    <div id="screen-game4" class="screen">
+        <h2 class="text-3xl mb-4 comic-font text-center bg-white px-4 py-1 border-4 border-black">THE MASTERMIND</h2>
+        <div class="neo-box p-6 max-w-lg w-full bg-[#ff90e8]">
+            <p id="mcq-question" class="text-lg font-bold mb-6 text-center"></p>
+            <div id="mcq-options" class="flex flex-col gap-3">
+                <!-- Options via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 7: Debrief -->
+    <div id="screen-debrief" class="screen">
+        <div class="neo-box p-6 max-w-2xl w-full text-center">
+            <h1 class="text-4xl mb-2 text-[#23a094]">TEST COMPLETED!</h1>
+            <h2 id="finalScoreText" class="text-5xl font-bold mb-4 comic-font">Skor: 0%</h2>
+            <div id="reinforcementMsg" class="font-bold text-lg mb-6 p-3 rounded border-2 border-black"></div>
+            
+            <h3 class="text-2xl mb-4 text-left border-b-4 border-black pb-2">Log Hasil Pengerjaan</h3>
+            <div id="feedbackContainer" class="max-h-60 overflow-y-auto mb-4 text-sm">
+                <!-- Feedback injected via JS -->
+            </div>
+            
+            <button onclick="location.reload()" class="neo-button px-8 py-3 bg-[#ffcf59] text-xl mt-4">KEMBALI KE AWAL</button>
+        </div>
+    </div>
+
+    <!-- Badge Modal -->
+    <div id="badgeModal" class="modal-overlay">
+        <div class="neo-box p-8 text-center bg-white max-w-sm">
+            <div id="badgeIcon" class="badge-img">🏆</div>
+            <h2 class="text-3xl mb-2 comic-font" id="badgeTitle">Tahap Selesai!</h2>
+            <p class="mb-6 font-bold" id="badgeDesc">Penjelasan badge.</p>
+            <button onclick="closeBadgeAndContinue()" class="neo-button px-6 py-2 bg-[#ffcf59] uppercase">Lanjutkan</button>
+        </div>
+    </div>
+
+    <footer>Education & Training Dept. – Pre-Test Gamification 2.0 © 2026</footer>
+
+<script>
+/* ================= GAME DATA ================= */
+// GAME 1: Benar atau Salah
+const g1_swipe = [
+    { q: "Penggunaan Github dalam pembuatan gamifikasi HTML di workshop ini berfungsi sebagai server untuk mengeksekusi script pemrograman back-end yang rumit.", a: false, rational: "Github murni digunakan sebagai 'rak penyimpanan virtual' (Repository & Pages) agar file HTML bisa diakses secara publik." },
+    { q: "Pada tahap Core Execution, 'Dynamic Difficulty' sangat penting agar permainan dapat menyesuaikan tingkat kesulitan secara otomatis.", a: true, rational: "Benar, agar state of flow tercapai dan peserta tidak bosan." },
+    { q: "Saat menghubungkan database dengan Google Sheets, kode Javascript dari Gemini AI harus dipaste langsung ke menu 'Macros'.", a: false, rational: "Kode Javascript harus diinput ke dalam Google Apps Script (GAS)." },
+    { q: "Pada fase Post-Action Debrief, memberikan Analisis Taktis lebih efektif daripada sekadar menampilkan skor angka akhir.", a: true, rational: "Debrief harus memberikan insight performa." },
+    { q: "Pemanfaatan AI (seperti Gemini/Claude) dalam memproduksi alur game dapat memangkas waktu kerja dari 20 jam menjadi sekitar 1 jam.", a: true, rational: "AI bertindak sebagai asisten koding yang sangat cepat." }
+];
+
+// GAME 2: Router (1 Jawaban Benar)
+const g2_connect = [
+    { q: "Elemen 'The Hook' pada Mission Briefing", options: ["Bertujuan membangkitkan rasa penasaran dan memberikan alasan kuat (Why) bagi para pemain.", "Berfungsi menampilkan skor akhir dan evaluasi performa peserta secara mendetail di akhir.", "Merupakan instruksi teknis untuk menghubungkan HTML dengan database sistem secara aman."], ans: 0, rational: "The Hook bertujuan memancing minat di awal (Why)." },
+    { q: "Status Eksekusi 'Execute as Me' di Web App GAS", options: ["Membatasi akses database hanya untuk pengguna yang memiliki akun Github pada organisasi.", "Memberikan otorisasi otomatis agar database Google Sheets dapat ditulisi peserta (Anyone).", "Menghubungkan langsung antarmuka gamifikasi dengan sistem manajemen pembelajaran internal."], ans: 1, rational: "Agar user lain (Anyone) bisa menulis ke database tanpa login ke akun pembuat." },
+    { q: "Github Pages dengan status 'Branch: Main'", options: ["Berfungsi mempublikasikan repository HTML menjadi URL (link) aktif yang diakses publik.", "Bertujuan memisahkan file Javascript dari HTML agar proses pengambilan data lebih cepat.", "Berperan sebagai tempat pengumpulan feedback otomatis dari peserta di akhir tantangan."], ans: 0, rational: "Branch Main adalah default root untuk mempublikasikan halaman Github Pages." },
+    { q: "Elemen 'Real-time Feedback'", options: ["Metode pengumpulan data permainan ke dalam database Sheets berkala tiap lima menit.", "Antarmuka interaktif yang langsung menunjukkan indikator progres (seperti XP) usai aksi.", "Laporan evaluasi komprehensif yang dikirim melalui email usai pemain tamat simulasi."], ans: 1, rational: "Feedback yang cepat dan real-time penting dalam flow gamifikasi." },
+    { q: "Mode 'Canvas' di Gemini AI", options: ["Fitur khusus (workspace) terpisah untuk memodifikasi dan meninjau pratinjau kode instan.", "Sebuah bahasa pemrograman sekunder yang digunakan AI untuk membuat animasi karakter game.", "Tempat penyimpanan (repository) virtual yang menggantikan fungsi Github untuk file HTML."], ans: 0, rational: "Canvas memisahkan chat dan area editing code." }
+];
+
+// GAME 3: Card Select (1 Jawaban Benar)
+const g3_memory = [
+    { q: "Menciptakan elemen kompetisi antar peserta training untuk memacu motivasi secara transparan.", options: ["Badge", "Leaderboard", "Interactive UI", "Mission Briefing"], ans: 1, rational: "Leaderboard (Papan Peringkat) memicu jiwa kompetitif." },
+    { q: "Berperan sebagai 'Folder' utama tempat penyimpanan file proyek gamifikasi.", options: ["Canvas AI", "Github Pages", "Repository Github", "Google Apps Script"], ans: 2, rational: "Repository adalah direktori utama tempat aset kode disimpan di Github." },
+    { q: "Kondisi ketika antarmuka tidak kaku dan pemain merasa bahwa setiap keputusan berdampak pada jalannya simulasi.", options: ["Interactive UI", "Real-time Data", "Dynamic Logic", "The Hook"], ans: 0, rational: "UI yang interaktif membuat pengguna merasa terlibat langsung." },
+    { q: "Nama default mutlak yang harus digunakan saat commit changes agar Github Pages terbaca otomatis.", options: ["main.html", "index.html", "game.html", "app.html"], ans: 1, rational: "Web server otomatis mencari index.html sebagai beranda." },
+    { q: "Diberikan sebagai penanda pencapaian spesifik tertentu (prestasi) dari satu aktivitas ke aktivitas lainnya.", options: ["Leaderboard", "Point / XP", "Level Up", "Badge / Lencana"], ans: 3, rational: "Badge adalah simbol apresiasi visual atas pencapaian tertentu." }
+];
+
+// GAME 4: MCQ (1 Jawaban Benar)
+const g4_mcq = [
+    {
+        q: "Anda menemukan gamifikasi HTML di Github muncul error 404 saat diakses. Langkah evaluasi pertama yang harus dicek di repository Github adalah?",
+        options: [
+            "Memeriksa kembali apakah kode Javascript di Apps Script telah di-deploy dengan pengaturan 'Anyone'.",
+            "Memastikan fitur Advanced Security pada repository Github telah diaktifkan oleh akun administrator.",
+            "Memeriksa dan memastikan kembali apakah penamaan file HTML utama sudah diubah menjadi 'index.html'.",
+            "Mengulangi proses penulisan prompt (prompting) di platform AI agar menghasilkan URL link yang baru."
+        ],
+        ans: 2, rational: "Github pages secara default mencari index.html sebagai halaman utama."
+    },
+    {
+        q: "Game simulasi dirancang untuk menangani komplain pelanggan dengan berbagai profil emosi. Mekanik game apa yang paling direkomendasikan?",
+        options: [
+            "Mekanik 'Connect the Dots' untuk menghubungkan setiap poin SOP perusahaan dengan pasal-pasal hukum.",
+            "Mekanik 'Dialog Card' untuk merangkai respons komunikasi yang paling sesuai dengan emosi pelanggan.",
+            "Mekanik 'Crossword' (Teka-Teki Silang) untuk menebak istilah-istilah keluhan dan komplain pelanggan.",
+            "Mekanik 'Leaderboard' yang difokuskan untuk mencatat durasi penyelesaian komplain setiap pesertanya."
+        ],
+        ans: 1, rational: "Mekanik Dialog Card cocok untuk mensimulasikan percakapan dan respon."
+    },
+    {
+        q: "Saat diuji, muncul pesan Error pada Execution Log di GAS dan tabel data Sheets tidak terisi. Penyebab paling logis dari kendala tersebut adalah?",
+        options: [
+            "Ketidaksesuaian penamaan teks antara header di Google Sheets dengan parameter variabel di Javascript.",
+            "Terjadi kesalahan karena kreator tidak menggunakan mode browser incognito saat mem-paste kode script.",
+            "Terjadi konflik sistem karena akun Google untuk Github berbeda dengan akun Google untuk akses Sheets.",
+            "Sistem file HTML murni (Single File) tidak mendukung fitur pengiriman data jika tanpa perantara PHP."
+        ],
+        ans: 0, rational: "Variabel data (key) yang dikirim dari HTML harus persis sama dengan parameter penangkap di GAS dan Header Sheet."
+    },
+    {
+        q: "Kreator hanya memberi notifikasi 'Skor Anda 100 - Lulus' di akhir permainan. Mengapa ini dianggap belum sempurna secara Gamifikasi 2.0?",
+        options: [
+            "Permainan dinilai tidak memiliki elemen kompetitif karena kreator tidak menyertakan papan Leaderboard.",
+            "Fase debrief seharusnya memuat analisis taktis terkait performa peserta, bukan sekadar angka absolut.",
+            "Simulasi tersebut dinilai kurang menarik dan terlalu monoton karena tidak menyertakan elemen grafis.",
+            "Hasil kelulusan peserta dianggap tidak sah karena tidak disertai tanda tangan digital dari manajemen."
+        ],
+        ans: 1, rational: "Post-action debrief yang baik harus menganalisa letak performa peserta, bukan sekedar angka kelulusan."
+    },
+    {
+        q: "Background Music (BGM) tidak menyala saat preview HTML buatan Gemini. Langkah troubleshooting paling tepat tanpa coding manual adalah?",
+        options: [
+            "Mengonversi format audio dasar tersebut menjadi file berformat MP4 agar lebih kompatibel dengan sistem.",
+            "Menghapus repository Github yang bermasalah tersebut secara keseluruhan lalu membuat repositori yang baru.",
+            "Memberikan instruksi revisi secara langsung kepada Gemini melalui prompt lanjutan di jendela chat yang sama.",
+            "Menambahkan tag <bgsound> secara manual di baris paling awal dokumen HTML dengan bantuan aplikasi teks."
+        ],
+        ans: 2, rational: "Kekuatan utama AI adalah kemampuannya memperbaiki kodenya sendiri melalui iterasi prompt perbaikan."
+    }
+];
+
+/* ================= STATE & AUDIO ================= */
+let state = {
+    name: '', nik: '', score: 0, maxScore: 20, stage: 0,
+    answers: [], 
+    g1_idx: 0, g2_idx: 0, g3_idx: 0, g4_idx: 0,
+    deviceInfo: {}
+};
+
+// Web Audio API
+let audioCtx;
+let isMutedBGM = false; // Memisahkan status Mute khusus untuk BGM
+let bgmInterval = null;
+
+function initAudio() {
+    if(!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        document.getElementById('muteBtn').addEventListener('click', toggleMute);
+    }
+}
+
+function playTone(freq, type, duration, vol=0.1) {
+    if(!audioCtx) return; // Dihilangkan pengecekan mute di sini agar SFX selalu bunyi
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+function playSFX(type) {
+    if(type === 'click') playTone(600, 'sine', 0.1, 0.2);
+    if(type === 'correct') { playTone(523.25, 'sine', 0.1); setTimeout(()=>playTone(659.25, 'sine', 0.2), 100); }
+    if(type === 'wrong') { playTone(300, 'sawtooth', 0.1); setTimeout(()=>playTone(250, 'sawtooth', 0.3), 100); }
+    if(type === 'badge') { playTone(440, 'square', 0.1); setTimeout(()=>playTone(554, 'square', 0.1), 100); setTimeout(()=>playTone(659, 'square', 0.3), 200); }
+}
+
+function startBGM() {
+    if(!audioCtx || bgmInterval) return;
+    const notes = [220, 0, 220, 293, 0, 329, 293, 220]; 
+    let idx = 0;
+    bgmInterval = setInterval(() => {
+        if(!isMutedBGM && notes[idx] > 0) playTone(notes[idx], 'triangle', 0.2, 0.05); // BGM dicek di sini
+        idx = (idx + 1) % notes.length;
+    }, 250); 
+}
+
+function toggleMute() {
+    isMutedBGM = !isMutedBGM;
+    document.getElementById('muteBtn').innerText = isMutedBGM ? "🔇 BGM" : "🔊 BGM";
+    document.getElementById('muteBtn').style.backgroundColor = isMutedBGM ? "var(--accent)" : "black";
+    document.getElementById('muteBtn').style.boxShadow = isMutedBGM ? "3px 3px 0 black" : "3px 3px 0 var(--primary)";
+}
+
+function addScore() {
+    state.score++;
+    document.getElementById('scoreDisplay').innerText = state.score;
+    updateProgress();
+}
+function updateProgress() {
+    const pct = (state.score / state.maxScore) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+}
+function saveAnswer(qText, isCorrect, rationalText) {
+    state.answers.push({ q: qText, isCorrect: isCorrect, rational: rationalText });
+}
+
+/* ================= DEVICE TRACKING & SUBMIT ================= */
+async function fetchDeviceInfo() {
+    try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        state.deviceInfo = {
+            ip: ipData.ip,
+            userAgent: navigator.userAgent,
+            platform: navigator.platform || navigator.userAgentData?.platform,
+            screen: `${window.screen.width}x${window.screen.height}`
+        };
+    } catch (error) {
+        state.deviceInfo = { ip: "Unknown", userAgent: navigator.userAgent, platform: "Unknown" };
+    }
+}
+
+/**
+ * 🚀 FUNGSI PENGIRIMAN DATA KE GOOGLE SHEETS (GAS Web App)
+ * Fungsi ini menggunakan fetch() API untuk mengirim payload JSON secara asinkron.
+ * * Struktur JSON dicocokkan persis (100%) dengan variabel penangkap di GAS.
+ * Header diset menjadi 'text/plain;charset=utf-8' agar tidak memicu Preflight CORS yang sering
+ * menjadi masalah saat mengirim POST request langsung ke URL Google Apps Script dari Client-side.
+ */
+async function sendGameDataToGoogleSheets(finalScore) {
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzvNxnDPdmFVwMDzkp15EWdoyPBQdmCqwIuQ3R6fZvh5Al4fTU32uFe6oUPQlHgmvcK/exec";
+
+    // Mapping state gamifikasi ke format/key yang persis diminta GAS
+    const playerData = {
+        timestamp: new Date().toISOString(), // Waktu (Date/Time)
+        nama: state.name,                    // String
+        nik: state.nik,                      // String
+        skor: finalScore,                    // Number (Persentase 0-100)
+        detail_log: JSON.stringify(state.answers.map(a => a.isCorrect ? 1 : 0)), // Array diubah ke String
+        ip_address: state.deviceInfo.ip || "Unknown",
+        device_os: state.deviceInfo.platform || "Unknown",
+        browser_info: state.deviceInfo.userAgent || "Unknown",
+        screen_res: state.deviceInfo.screen || "Unknown"
+    };
+    
+    console.log("MENGIRIM DATA PRETEST KE GOOGLE SHEETS:", playerData);
+    
+    try {
+        const response = await fetch(GAS_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 
+                // Sangat penting: text/plain mencegah request OPTIONS tambahan (preflight) dari browser
+                'Content-Type': 'text/plain;charset=utf-8' 
+            },
+            body: JSON.stringify(playerData)
+        });
+
+        // Cek jika proses fetch berhasil
+        if(response.ok) {
+            console.log("✅ Data pemain berhasil terkirim ke Google Sheets.");
+            // Anda juga bisa parse output respon GAS jika mereka mereturn JSON 
+            // const result = await response.json(); 
+        } else {
+            console.error("❌ Gagal mengirim data. Status Server:", response.status);
+        }
+    } catch (error) {
+        console.error("❌ Terjadi kesalahan saat mencoba terhubung ke GAS:", error);
+    }
+}
+
+/* ================= NAVIGATION ================= */
+function switchScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+    window.scrollTo(0,0);
+}
+
+function startGame() {
+    const name = document.getElementById('playerName').value.trim();
+    const nik = document.getElementById('playerNIK').value.trim();
+    if(!name || !nik) { alert("Data agen wajib diisi!"); return; }
+    
+    state.name = name; state.nik = nik;
+    document.getElementById('displayName').innerText = name;
+    document.getElementById('hudName').innerText = name; // Update nama pemain di Dashboard (HUD)
+    
+    fetchDeviceInfo(); // Tracker
+    initAudio();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    startBGM();
+    playSFX('click');
+    
+    switchScreen('briefing');
+}
+
+function showBadge(icon, title, desc, nextAction) {
+    playSFX('badge');
+    document.getElementById('badgeIcon').innerText = icon;
+    document.getElementById('badgeTitle').innerText = title;
+    document.getElementById('badgeDesc').innerText = desc;
+    const modal = document.getElementById('badgeModal');
+    modal.classList.add('active');
+    modal.dataset.next = nextAction;
+}
+
+function closeBadgeAndContinue() {
+    playSFX('click');
+    document.getElementById('badgeModal').classList.remove('active');
+    const next = document.getElementById('badgeModal').dataset.next;
+    if(next === 'game2') initGame2();
+    if(next === 'game3') initGame3();
+    if(next === 'game4') initGame4();
+    if(next === 'debrief') showDebrief();
+}
+
+/* ================= GAME 1: SWIPE-IT ================= */
+let currentSwipeCard = null;
+function initGame1() {
+    document.getElementById('hud').style.display = 'flex';
+    switchScreen('game1');
+    state.g1_idx = 0;
+    renderSwipeCard();
+}
+
+function renderSwipeCard() {
+    const container = document.getElementById('swipeContainer');
+    container.innerHTML = '';
+    if(state.g1_idx >= g1_swipe.length) {
+        showBadge("🚀", "Logic Novice", "Berhasil melewati tahap Swipe-It!", "game2");
+        return;
+    }
+    const item = g1_swipe[state.g1_idx];
+    const card = document.createElement('div');
+    card.className = 'swipe-card';
+    card.innerHTML = `<h3 class="text-xl mb-4 font-bold">Pernyataan ${state.g1_idx+1}/5</h3><p class="text-lg">${item.q}</p>`;
+    
+    let startX = 0, currentX = 0, isDragging = false;
+    const dragStart = (e) => { isDragging = true; startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; card.style.transition = 'none'; };
+    const dragMove = (e) => {
+        if(!isDragging) return;
+        currentX = (e.type.includes('mouse') ? e.pageX : e.touches[0].pageX) - startX;
+        card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.05}deg)`;
+        card.style.backgroundColor = currentX > 50 ? 'var(--tertiary)' : (currentX < -50 ? 'var(--accent)' : 'var(--primary)');
+        card.style.color = Math.abs(currentX) > 50 ? 'white' : 'black';
+    };
+    const dragEnd = () => {
+        if(!isDragging) return;
+        isDragging = false;
+        card.style.transition = 'transform 0.3s ease, background-color 0.3s ease';
+        if(currentX > 100) handleSwipe(true);
+        else if(currentX < -100) handleSwipe(false);
+        else { card.style.transform = 'translateX(0) rotate(0)'; card.style.backgroundColor = 'var(--primary)'; card.style.color='black';}
+    };
+    card.addEventListener('mousedown', dragStart); window.addEventListener('mousemove', dragMove); window.addEventListener('mouseup', dragEnd);
+    card.addEventListener('touchstart', dragStart, {passive:true}); window.addEventListener('touchmove', dragMove, {passive:true}); window.addEventListener('touchend', dragEnd);
+    currentSwipeCard = { card, dragMove, dragEnd };
+    container.appendChild(card);
+}
+function handleSwipeBtn(guess) {
+    if(currentSwipeCard) {
+        currentSwipeCard.card.style.transform = guess ? 'translateX(200px) rotate(20deg)' : 'translateX(-200px) rotate(-20deg)';
+        setTimeout(() => handleSwipe(guess), 200);
+    }
+}
+function handleSwipe(guess) {
+    window.removeEventListener('mousemove', currentSwipeCard.dragMove); window.removeEventListener('mouseup', currentSwipeCard.dragEnd);
+    window.removeEventListener('touchmove', currentSwipeCard.dragMove); window.removeEventListener('touchend', currentSwipeCard.dragEnd);
+    
+    const item = g1_swipe[state.g1_idx];
+    const isCorrect = guess === item.a;
+    if(isCorrect) { playSFX('correct'); addScore(); } else { playSFX('wrong'); }
+    saveAnswer(item.q, isCorrect, item.rational);
+    
+    state.g1_idx++;
+    setTimeout(renderSwipeCard, 300);
+}
+
+/* ================= GAME 2: TERMINAL ROUTER (New Connect) ================= */
+function initGame2() {
+    switchScreen('game2');
+    state.g2_idx = 0;
+    renderGame2();
+}
+
+function renderGame2() {
+    if(state.g2_idx >= g2_connect.length) {
+        showBadge("🔌", "Syntax Weaver", "Berhasil menyambungkan rute sistem!", "game3");
+        return;
+    }
+    const item = g2_connect[state.g2_idx];
+    document.getElementById('router-question').innerText = item.q;
+    const optsContainer = document.getElementById('router-options');
+    optsContainer.innerHTML = '';
+    
+    item.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'neo-button py-3 text-sm text-left px-4 bg-white hover:bg-gray-100 flex items-center gap-3 relative overflow-hidden';
+        btn.innerHTML = `<div class="w-5 h-5 rounded-full border-2 border-black flex-shrink-0 bg-gray-200 terminal-dot"></div> <span>${opt}</span>`;
+        btn.onclick = () => handleGame2(idx, btn);
+        optsContainer.appendChild(btn);
+    });
+}
+
+function handleGame2(selectedIdx, btnElement) {
+    const item = g2_connect[state.g2_idx];
+    const isCorrect = selectedIdx === item.ans;
+    
+    document.querySelectorAll('#router-options button').forEach(b => b.disabled = true);
+    
+    if(isCorrect) {
+        playSFX('correct'); addScore();
+        btnElement.style.backgroundColor = 'var(--tertiary)';
+        btnElement.style.color = 'white';
+        btnElement.querySelector('.terminal-dot').style.backgroundColor = 'var(--primary)';
+    } else {
+        playSFX('wrong');
+        btnElement.style.backgroundColor = 'var(--accent)';
+        btnElement.style.color = 'white';
+        btnElement.querySelector('.terminal-dot').style.backgroundColor = 'black';
+        
+        // Show correct answer
+        const correctBtn = document.querySelectorAll('#router-options button')[item.ans];
+        correctBtn.style.backgroundColor = 'var(--primary)';
+        correctBtn.querySelector('.terminal-dot').style.backgroundColor = 'white';
+    }
+    
+    saveAnswer(item.q, isCorrect, item.rational);
+    state.g2_idx++;
+    setTimeout(renderGame2, 1200);
+}
+
+/* ================= GAME 3: CARD SELECT (New Flip Card) ================= */
+function initGame3() {
+    switchScreen('game3');
+    state.g3_idx = 0;
+    renderGame3();
+}
+
+function renderGame3() {
+    if(state.g3_idx >= g3_memory.length) {
+        showBadge("🧠", "Element Scanner", "Berhasil memindai komponen gamifikasi!", "game4");
+        return;
+    }
+    const item = g3_memory[state.g3_idx];
+    document.getElementById('card-question').innerText = item.q;
+    const optsContainer = document.getElementById('card-options');
+    optsContainer.innerHTML = '';
+    
+    item.options.forEach((opt, idx) => {
+        const card = document.createElement('button');
+        card.className = 'neo-button aspect-square bg-[#ffcf59] hover:bg-[#ff90e8] flex items-center justify-center p-3 text-center text-lg comic-font transition-all';
+        card.innerText = opt;
+        card.onclick = () => handleGame3(idx, card);
+        optsContainer.appendChild(card);
+    });
+}
+
+function handleGame3(selectedIdx, cardElement) {
+    const item = g3_memory[state.g3_idx];
+    const isCorrect = selectedIdx === item.ans;
+    
+    document.querySelectorAll('#card-options button').forEach(b => b.disabled = true);
+    
+    if(isCorrect) {
+        playSFX('correct'); addScore();
+        cardElement.style.backgroundColor = 'var(--tertiary)';
+        cardElement.style.color = 'white';
+    } else {
+        playSFX('wrong');
+        cardElement.style.backgroundColor = 'var(--accent)';
+        cardElement.style.color = 'white';
+        
+        // Highlight correct
+        document.querySelectorAll('#card-options button')[item.ans].style.backgroundColor = 'var(--primary)';
+    }
+    
+    saveAnswer(item.q, isCorrect, item.rational);
+    state.g3_idx++;
+    setTimeout(renderGame3, 1200);
+}
+
+/* ================= GAME 4: MCQ ================= */
+function initGame4() {
+    switchScreen('game4');
+    state.g4_idx = 0;
+    renderMCQ();
+}
+
+function renderMCQ() {
+    if(state.g4_idx >= g4_mcq.length) {
+        showBadge("👑", "The Mastermind", "Semua tahapan Pre-Test telah diselesaikan!", "debrief");
+        return;
+    }
+    const item = g4_mcq[state.g4_idx];
+    document.getElementById('mcq-question').innerText = item.q;
+    const optsContainer = document.getElementById('mcq-options');
+    optsContainer.innerHTML = '';
+    
+    item.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'neo-button py-3 text-sm text-left px-4 bg-white hover:bg-gray-100';
+        btn.innerText = String.fromCharCode(65 + idx) + ". " + opt;
+        btn.onclick = () => handleMCQ(idx, btn);
+        optsContainer.appendChild(btn);
+    });
+}
+
+function handleMCQ(selectedIdx, btnElement) {
+    const item = g4_mcq[state.g4_idx];
+    const isCorrect = selectedIdx === item.ans;
+    
+    document.querySelectorAll('#mcq-options button').forEach(b => b.disabled = true);
+    
+    if(isCorrect) {
+        playSFX('correct'); addScore();
+        btnElement.style.backgroundColor = 'var(--tertiary)';
+        btnElement.style.color = 'white';
+    } else {
+        playSFX('wrong');
+        btnElement.style.backgroundColor = 'var(--accent)';
+        btnElement.style.color = 'white';
+        document.querySelectorAll('#mcq-options button')[item.ans].style.backgroundColor = 'var(--primary)';
+    }
+    
+    saveAnswer(item.q, isCorrect, item.rational);
+    state.g4_idx++;
+    setTimeout(renderMCQ, 1500);
+}
+
+/* ================= DEBRIEF ================= */
+function showDebrief() {
+    document.getElementById('hud').style.display = 'none';
+    switchScreen('debrief');
+    playSFX('badge');
+    
+    const pct = Math.round((state.score / state.maxScore) * 100);
+    document.getElementById('finalScoreText').innerText = `Skor Akhir: ${pct}%`; 
+    
+    const reMsg = document.getElementById('reinforcementMsg');
+    if(pct >= 80) {
+        reMsg.innerText = "EXCELLENT! Nilai Pre-Test Anda sangat memuaskan.";
+        reMsg.className = "font-bold text-lg mb-6 p-3 rounded border-2 border-black bg-[var(--tertiary)] text-white";
+    } else if(pct >= 50) {
+        reMsg.innerText = "GOOD JOB! Tingkatkan fokus Anda selama sesi pelatihan.";
+        reMsg.className = "font-bold text-lg mb-6 p-3 rounded border-2 border-black bg-[var(--primary)]";
+    } else {
+        reMsg.innerText = "Silahkan ikuti sesi pelatihan dengan saksama untuk pemahaman lebih baik.";
+        reMsg.className = "font-bold text-lg mb-6 p-3 rounded border-2 border-black bg-[var(--accent)] text-white";
+    }
+    
+    const fbContainer = document.getElementById('feedbackContainer');
+    fbContainer.innerHTML = '';
+    state.answers.forEach((ans, idx) => {
+        const div = document.createElement('div');
+        div.className = `feedback-item ${ans.isCorrect ? 'correct' : 'wrong'}`;
+        div.innerHTML = `
+            <strong>${idx+1}. ${ans.isCorrect ? '✅ BENAR' : '❌ SALAH'}</strong><br>
+            <span class="text-xs text-gray-600">${ans.q}</span><br>
+            <i>Note: ${ans.rational}</i>
+        `;
+        fbContainer.appendChild(div);
+    });
+    
+    // =========================================================================
+    // 🎯 TRIGGER PENGIRIMAN DATA KE GOOGLE SHEETS
+    // Dipanggil secara otomatis ketika state game mendeteksi bahwa pemain telah
+    // menyelesaikan soal terakhir dan masuk ke layar Game Over/Quiz Finish Screen
+    // =========================================================================
+    sendGameDataToGoogleSheets(pct);
+}
+</script>
+</body>
+</html>
